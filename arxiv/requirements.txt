@@ -1,0 +1,18 @@
+# Core dependencies
+openai
+PySide6
+requests
+pypdf2
+pillow
+
+
+# PDF Processing
+pdf2image
+
+# ArXiv API
+arxiv
+
+# Utilities
+python-dotenv
+tqdm
+schedule
