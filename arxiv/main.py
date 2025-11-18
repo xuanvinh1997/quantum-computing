@@ -14,11 +14,13 @@ Usage:
     python main.py process --batch-size 5
     python main.py crawl --interval 6
     python main.py stats
+    python main.py ocr paper.pdf --output output.md
 """
 
 import argparse
 import sys
 from pathlib import Path
+from datetime import datetime
 
 from config import Config
 from arxiv_search import ArxivSearcher
@@ -27,6 +29,7 @@ from summarizer import PaperSummarizer
 from database import PaperDatabase
 from markdown_exporter import MarkdownExporter
 from crawler import ArxivCrawler
+from deep_research import DeepResearchEngine, format_research_output
 
 
 def setup_components():
@@ -380,10 +383,291 @@ def cmd_export(args):
     print("=" * 70)
 
 
+def cmd_research(args):
+    """Perform deep research query on papers"""
+    database = PaperDatabase(Config.DATABASE_PATH)
+
+    if not Config.SUMMARY_API_KEY:
+        print("ERROR: SUMMARY_API_KEY must be set to use research features")
+        sys.exit(1)
+
+    try:
+        # Initialize research engine
+        research_engine = DeepResearchEngine(
+            api_key=Config.SUMMARY_API_KEY,
+            base_url=Config.SUMMARY_BASE_URL,
+            database=database,
+            model_name=Config.SUMMARY_MODEL
+        )
+
+        # Execute research query
+        result = research_engine.research_query(
+            research_question=args.question,
+            search_query=args.filter,
+            category=args.category,
+            max_papers=args.max_papers,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens
+        )
+
+        # Format and display results
+        output = format_research_output(result, args.output)
+        print(output)
+
+    finally:
+        database.close()
+
+
+def cmd_compare(args):
+    """Perform comparative analysis on papers"""
+    database = PaperDatabase(Config.DATABASE_PATH)
+
+    if not Config.SUMMARY_API_KEY:
+        print("ERROR: SUMMARY_API_KEY must be set to use research features")
+        sys.exit(1)
+
+    try:
+        # Initialize research engine
+        research_engine = DeepResearchEngine(
+            api_key=Config.SUMMARY_API_KEY,
+            base_url=Config.SUMMARY_BASE_URL,
+            database=database,
+            model_name=Config.SUMMARY_MODEL
+        )
+
+        # Parse aspects
+        aspects = [a.strip() for a in args.aspects.split(',')]
+
+        # Execute comparative analysis
+        result = research_engine.comparative_analysis(
+            topic=args.topic,
+            aspects=aspects,
+            search_query=args.filter,
+            max_papers=args.max_papers,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens
+        )
+
+        # Format and display results
+        output = format_research_output(result, args.output)
+        print(output)
+
+    finally:
+        database.close()
+
+
+def cmd_trends(args):
+    """Analyze research trends"""
+    database = PaperDatabase(Config.DATABASE_PATH)
+
+    if not Config.SUMMARY_API_KEY:
+        print("ERROR: SUMMARY_API_KEY must be set to use research features")
+        sys.exit(1)
+
+    try:
+        # Initialize research engine
+        research_engine = DeepResearchEngine(
+            api_key=Config.SUMMARY_API_KEY,
+            base_url=Config.SUMMARY_BASE_URL,
+            database=database,
+            model_name=Config.SUMMARY_MODEL
+        )
+
+        # Execute trend analysis
+        result = research_engine.trend_analysis(
+            time_period=args.period,
+            focus_area=args.focus,
+            max_papers=args.max_papers,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens
+        )
+
+        # Format and display results
+        output = format_research_output(result, args.output)
+        print(output)
+
+    finally:
+        database.close()
+
+
+def cmd_connections(args):
+    """Find connections between papers"""
+    database = PaperDatabase(Config.DATABASE_PATH)
+
+    if not Config.SUMMARY_API_KEY:
+        print("ERROR: SUMMARY_API_KEY must be set to use research features")
+        sys.exit(1)
+
+    try:
+        # Initialize research engine
+        research_engine = DeepResearchEngine(
+            api_key=Config.SUMMARY_API_KEY,
+            base_url=Config.SUMMARY_BASE_URL,
+            database=database,
+            model_name=Config.SUMMARY_MODEL
+        )
+
+        # Find connections
+        result = research_engine.find_paper_connections(
+            arxiv_id=args.arxiv_id,
+            max_related=args.max_related,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens
+        )
+
+        # Format and display results
+        output = format_research_output(result, args.output)
+        print(output)
+
+    finally:
+        database.close()
+
+
+def cmd_custom(args):
+    """Execute custom research prompt"""
+    database = PaperDatabase(Config.DATABASE_PATH)
+
+    if not Config.SUMMARY_API_KEY:
+        print("ERROR: SUMMARY_API_KEY must be set to use research features")
+        sys.exit(1)
+
+    try:
+        # Initialize research engine
+        research_engine = DeepResearchEngine(
+            api_key=Config.SUMMARY_API_KEY,
+            base_url=Config.SUMMARY_BASE_URL,
+            database=database,
+            model_name=Config.SUMMARY_MODEL
+        )
+
+        # Execute custom prompt
+        result = research_engine.custom_prompt_research(
+            custom_prompt=args.prompt,
+            search_query=args.filter,
+            max_papers=args.max_papers,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens
+        )
+
+        # Format and display results
+        output = format_research_output(result, args.output)
+        print(output)
+
+    finally:
+        database.close()
+
+
+def cmd_ocr(args):
+    """OCR a PDF file and save to markdown"""
+    print("=" * 70)
+    print("OCR PDF TO MARKDOWN")
+    print("=" * 70)
+
+    if not Config.OCR_API_KEY:
+        print("ERROR: OCR_API_KEY must be set to use OCR features")
+        sys.exit(1)
+
+    # Initialize OCR processor
+    ocr_processor = PDFOCRProcessor(
+        api_key=Config.OCR_API_KEY,
+        base_url=Config.OCR_BASE_URL,
+        model_name=Config.OCR_MODEL
+    )
+
+    try:
+        # Determine if input is URL or local file
+        pdf_input = args.input
+        is_url = pdf_input.startswith('http://') or pdf_input.startswith('https://')
+
+        # Extract text from PDF
+        if is_url:
+            print(f"Processing PDF from URL: {pdf_input}")
+            extracted_text_dict = ocr_processor.extract_text_from_url(
+                pdf_input,
+                max_pages=args.max_pages,
+                cleanup=True
+            )
+        else:
+            # Local file
+            pdf_path = Path(pdf_input).expanduser().resolve()
+            if not pdf_path.exists():
+                print(f"ERROR: File not found: {pdf_path}")
+                sys.exit(1)
+
+            print(f"Processing local PDF: {pdf_path}")
+            extracted_text_dict = ocr_processor.extract_text_from_pdf(
+                str(pdf_path),
+                max_pages=args.max_pages
+            )
+
+        if not extracted_text_dict:
+            print("ERROR: No text extracted from PDF")
+            sys.exit(1)
+
+        # Get full text
+        full_text = ocr_processor.get_full_text(extracted_text_dict)
+        total_chars = len(full_text)
+        total_pages = len(extracted_text_dict)
+
+        print(f"\n Extracted {total_chars:,} characters from {total_pages} pages")
+
+        # Determine output path
+        if args.output:
+            output_path = Path(args.output).expanduser().resolve()
+        else:
+            # Generate output filename based on input
+            if is_url:
+                # Extract filename from URL
+                output_name = "ocr_output.md"
+            else:
+                # Use PDF filename
+                output_name = pdf_path.stem + "_ocr.md"
+            output_path = Path.cwd() / output_name
+
+        # Create markdown content
+        markdown_content = f"""# OCR Extract from PDF
+
+**Source:** {pdf_input}
+**Pages Processed:** {total_pages}
+**Characters Extracted:** {total_chars:,}
+**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+---
+
+"""
+        # Add page-by-page content
+        pages = sorted(extracted_text_dict.keys(), key=lambda x: int(x.split('_')[1]))
+        for page_key in pages:
+            page_num = page_key.split('_')[1]
+            page_text = extracted_text_dict[page_key]
+            markdown_content += f"## Page {page_num}\n\n{page_text}\n\n---\n\n"
+
+        # Write to file
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(markdown_content)
+
+        print(f" Saved to: {output_path}")
+
+        # Optionally display preview
+        if args.preview:
+            preview_length = min(500, len(full_text))
+            print(f"\nPreview (first {preview_length} characters):")
+            print("-" * 70)
+            print(full_text[:preview_length])
+            print("-" * 70)
+
+    except Exception as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
+
+    print("=" * 70)
+
+
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description="ArXiv Paper Crawler - Search, Process, and Export quantum computing papers",
+        description="ArXiv Paper Crawler - Search, Process, Export, and Research quantum computing papers",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -396,14 +680,30 @@ Examples:
   # Start continuous crawler
   python main.py crawl --interval 6
 
-  # Run once and exit
-  python main.py crawl --once
-
   # Show statistics
   python main.py stats --recent 10
 
   # Export to markdown
   python main.py export --processed-only --summary
+
+  # Deep research query
+  python main.py research "How is quantum computing applied to protein folding?"
+
+  # Comparative analysis
+  python main.py compare "quantum annealing" --aspects "methodology,performance,applications"
+
+  # Trend analysis
+  python main.py trends --focus "quantum machine learning"
+
+  # Find paper connections
+  python main.py connections 2511.10646v1
+
+  # Custom research prompt
+  python main.py custom "Summarize the key challenges in scaling quantum computers"
+
+  # OCR a PDF file to markdown
+  python main.py ocr paper.pdf --output output.md --max-pages 10
+  python main.py ocr https://arxiv.org/pdf/2511.10646 --preview
 
   # Show configuration
   python main.py config
@@ -455,6 +755,84 @@ Examples:
     export_parser.add_argument('--summary', '-s', action='store_true',
                               help='Create collection summary')
     export_parser.set_defaults(func=cmd_export)
+
+    # Research command
+    research_parser = subparsers.add_parser('research', help='Perform deep research query on papers')
+    research_parser.add_argument('question', help='Research question to answer')
+    research_parser.add_argument('--filter', '-f', help='Filter papers by keywords')
+    research_parser.add_argument('--category', '-c', help='Filter by category')
+    research_parser.add_argument('--max-papers', type=int, default=20,
+                                help='Maximum papers to analyze (default: 20)')
+    research_parser.add_argument('--temperature', type=float, default=0.4,
+                                help='LLM temperature (default: 0.4)')
+    research_parser.add_argument('--max-tokens', type=int, default=4096,
+                                help='Maximum tokens for response (default: 4096)')
+    research_parser.add_argument('--output', '-o', help='Save output to file')
+    research_parser.set_defaults(func=cmd_research)
+
+    # Compare command
+    compare_parser = subparsers.add_parser('compare', help='Compare papers on a topic')
+    compare_parser.add_argument('topic', help='Topic to compare')
+    compare_parser.add_argument('--aspects', '-a', required=True,
+                               help='Comma-separated aspects to compare (e.g., "methodology,performance,scalability")')
+    compare_parser.add_argument('--filter', '-f', help='Filter papers by keywords')
+    compare_parser.add_argument('--max-papers', type=int, default=15,
+                               help='Maximum papers to analyze (default: 15)')
+    compare_parser.add_argument('--temperature', type=float, default=0.3,
+                               help='LLM temperature (default: 0.3)')
+    compare_parser.add_argument('--max-tokens', type=int, default=3072,
+                               help='Maximum tokens for response (default: 3072)')
+    compare_parser.add_argument('--output', '-o', help='Save output to file')
+    compare_parser.set_defaults(func=cmd_compare)
+
+    # Trends command
+    trends_parser = subparsers.add_parser('trends', help='Analyze research trends')
+    trends_parser.add_argument('--period', '-p', default='recent',
+                              help='Time period (default: recent)')
+    trends_parser.add_argument('--focus', '-f', help='Focus area for trend analysis')
+    trends_parser.add_argument('--max-papers', type=int, default=30,
+                              help='Maximum papers to analyze (default: 30)')
+    trends_parser.add_argument('--temperature', type=float, default=0.4,
+                              help='LLM temperature (default: 0.4)')
+    trends_parser.add_argument('--max-tokens', type=int, default=3072,
+                              help='Maximum tokens for response (default: 3072)')
+    trends_parser.add_argument('--output', '-o', help='Save output to file')
+    trends_parser.set_defaults(func=cmd_trends)
+
+    # Connections command
+    connections_parser = subparsers.add_parser('connections', help='Find connections between papers')
+    connections_parser.add_argument('arxiv_id', help='ArXiv ID of source paper')
+    connections_parser.add_argument('--max-related', type=int, default=10,
+                                   help='Maximum related papers to find (default: 10)')
+    connections_parser.add_argument('--temperature', type=float, default=0.3,
+                                   help='LLM temperature (default: 0.3)')
+    connections_parser.add_argument('--max-tokens', type=int, default=2048,
+                                   help='Maximum tokens for response (default: 2048)')
+    connections_parser.add_argument('--output', '-o', help='Save output to file')
+    connections_parser.set_defaults(func=cmd_connections)
+
+    # Custom prompt command
+    custom_parser = subparsers.add_parser('custom', help='Execute custom research prompt')
+    custom_parser.add_argument('prompt', help='Custom research prompt')
+    custom_parser.add_argument('--filter', '-f', help='Filter papers by keywords')
+    custom_parser.add_argument('--max-papers', type=int, default=20,
+                              help='Maximum papers to include (default: 20)')
+    custom_parser.add_argument('--temperature', type=float, default=0.5,
+                              help='LLM temperature (default: 0.5)')
+    custom_parser.add_argument('--max-tokens', type=int, default=4096,
+                              help='Maximum tokens for response (default: 4096)')
+    custom_parser.add_argument('--output', '-o', help='Save output to file')
+    custom_parser.set_defaults(func=cmd_custom)
+
+    # OCR command
+    ocr_parser = subparsers.add_parser('ocr', help='OCR a PDF file and save to markdown')
+    ocr_parser.add_argument('input', help='PDF file path or URL')
+    ocr_parser.add_argument('--output', '-o', help='Output markdown file path (default: auto-generated)')
+    ocr_parser.add_argument('--max-pages', '-p', type=int, default=20,
+                           help='Maximum pages to process (default: 20)')
+    ocr_parser.add_argument('--preview', action='store_true',
+                           help='Show preview of extracted text')
+    ocr_parser.set_defaults(func=cmd_ocr)
 
     args = parser.parse_args()
 
