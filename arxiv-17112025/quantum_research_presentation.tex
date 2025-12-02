@@ -1,0 +1,987 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\title[Quantum Computing Research]{Quantum Computing: Recent Advances}
+\subtitle{Three Research Papers on Quantum GANs and Protein Folding}
+\author{Presentation}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}{Nội dung trình bày}
+\tableofcontents
+\end{frame}
+
+% ============================================================================
+% PAPER 1: Quantum GANs on Silicon Photonic Chip
+% ============================================================================
+\section{Paper 1: Quantum GANs trên Silicon Photonic Chip}
+
+\begin{frame}{Paper 1: Tổng quan}
+\textbf{Tiêu đề:} Quantum Generative Adversarial Networks in a Silicon Photonic Chip with Maximum Expressibility
+
+\vspace{0.3cm}
+\textbf{Tác giả:} Haoran Ma, Liao Ye, Fanjie Ruan, et al. (Zhejiang University)
+
+\vspace{0.3cm}
+\textbf{Nguồn:} arXiv:2404.05921v1
+
+\vspace{0.3cm}
+\textbf{Lĩnh vực:} Quantum Machine Learning, Silicon Photonics, GANs
+\end{frame}
+
+\begin{frame}{Động lực nghiên cứu}
+\textbf{Vấn đề:}
+\begin{itemize}
+    \item Quantum GANs có tiềm năng lợi thế hàm mũ so với classical GANs
+    \item Cần nền tảng phần cứng có khả năng biểu diễn cao (high expressibility)
+    \item Các chip photonic trước đây bị giới hạn về khả năng tạo trạng thái lượng tử
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Giải pháp:}
+\begin{itemize}
+    \item Thiết kế chip silicon photonic 2-qubit có thể tạo \textbf{bất kỳ trạng thái thuần 2-qubit nào}
+    \item Thực thi các phép toán Controlled-Unitary (CU) tùy ý
+    \item Kết hợp AMZI (Asymmetrical MZI) và frequency post-selection
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kiến trúc chip}
+\textbf{Thành phần chính:}
+\begin{enumerate}
+    \item \textbf{Nguồn photon:} 2 spiral waveguides tạo photon pairs qua SFWM
+    \item \textbf{AMZI:} Điều chỉnh biên độ entangled states
+    \item \textbf{Controlled-Unitary operations:} Tạo trạng thái 2-qubit tùy ý
+    \item \textbf{Single-qubit gates:} State tomography và tính toán
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Đặc điểm kỹ thuật:}
+\begin{itemize}
+    \item Kích thước: $3mm \times 0.8mm$
+    \item 14 phase shifters (PS) điều khiển nhiệt-quang
+    \item Bước sóng: Signal 1555.75nm, Idler 1546.12nm
+    \item Coupling loss: $\sim 4.5$ dB
+\end{itemize}
+\end{frame}
+
+\begin{frame}{AMZI với Frequency Post-selection}
+\textbf{Nguyên lý hoạt động:}
+
+Ma trận truyền AMZI:
+\[
+U_{AMZI} = e^{j(\beta_{s,i}\Delta l + \phi)} \begin{bmatrix}
+\sin((\beta_{s,i}\Delta l + \phi)/2) & \cos((\beta_{s,i}\Delta l + \phi)/2) \\
+\cos((\beta_{s,i}\Delta l + \phi)/2) & -\sin((\beta_{s,i}\Delta l + \phi)/2)
+\end{bmatrix}
+\]
+
+\vspace{0.3cm}
+\textbf{Coincidence rate:}
+\[
+C(\phi) \propto C_{max}\sin^4(\phi/2)
+\]
+
+\vspace{0.3cm}
+\textbf{Trạng thái tạo ra:}
+\[
+|\psi_0\rangle = e^{i\theta_s}\frac{\sqrt{C_1(\phi_1)}|0_s\rangle|0_i\rangle + \sqrt{C_2(\phi_2)}|1_s\rangle|1_i\rangle}{A}
+\]
+
+với góc quay: $\tan(\phi) = \sqrt{C_2(\phi_2)/C_1(\phi_1)}$
+\end{frame}
+
+\begin{frame}{Khả năng tạo trạng thái tùy ý}
+\textbf{Quantum circuit tương đương:}
+
+Kết hợp $R_y(\phi)$ gate và 2 unitary $\hat{U}$ và $\hat{V}$ có thể tạo bất kỳ trạng thái 2-qubit nào:
+
+\[
+|\psi_2\rangle = \sqrt{p_0}|00\rangle + \sqrt{p_1}|01\rangle + \sqrt{p_2}|10\rangle + \sqrt{p_3}|11\rangle
+\]
+
+với $p_0 + p_1 + p_2 + p_3 = 1$
+
+\vspace{0.3cm}
+\textbf{Ý nghĩa:}
+\begin{itemize}
+    \item Hệ số trước mỗi basis state hoàn toàn tùy ý
+    \item Maximum expressibility cho quantum GANs
+    \item Vượt trội so với các công trình trước [32-36]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Thí nghiệm 1: Học trạng thái Single-qubit}
+\textbf{Mô hình PQ-GAN (Pure Quantum GAN):}
+\begin{itemize}
+    \item Generator G: Tạo trạng thái lượng tử $\rho(\theta_g)$
+    \item Discriminator D: Đo quantum measurement $M(\theta_d)$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Hàm tối ưu:}
+\[
+\min_{\theta_g} \max_{\theta_d} \text{tr}[M(\theta_d)\rho(\theta_g)] - \text{tr}[\sigma M] = 0
+\]
+
+\vspace{0.3cm}
+\textbf{Kết quả:}
+\begin{itemize}
+    \item \textbf{Pure state:} Fidelity \textbf{99.41\%} (trạng thái mục tiêu: $(|0\rangle + |1\rangle)/\sqrt{2}$)
+    \item \textbf{Mixed state:} Fidelity \textbf{98.39\%} (trạng thái: $0.7|0\rangle\langle 0| + 0.3|1\rangle\langle 1|$)
+    \item Huấn luyện: 200 epochs, D:G ratio = 3:1
+    \item Learning rates: $\eta_G = 0.02$, $\eta_D = 0.1$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Thí nghiệm 2: Load Classical Distribution}
+\textbf{Kiến trúc HQC-GAN (Hybrid Quantum-Classical):}
+\begin{itemize}
+    \item Quantum Generator: PQC với 3 tham số trainable
+    \item Classical Critic: Fully-connected NN (4-5-3-1)
+    \item Loss function: Wasserstein distance với gradient penalty
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Hàm tối ưu (WGAN-GP):}
+\[
+\min_{\theta_g} \max_{\theta_c} D_{p_\theta}(G(\theta_g)) - D_{p_\theta}(\hat{x}) + \lambda \mathbb{E}_{p_\theta}[||\nabla_\theta D_{p_\theta}(\hat{x})||_2 - 1]^2
+\]
+
+\vspace{0.3cm}
+\textbf{Distributions được học:}
+\begin{enumerate}
+    \item Normal: $X \sim N(\mu=1.5, \sigma=1)$
+    \item Log-normal: $X \sim LN(\mu=0.5, \sigma=0.5)$
+    \item Bimodal: Superposition của 2 Gaussians
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Kết quả Load Distribution}
+\textbf{Hiệu suất:}
+\begin{itemize}
+    \item KLD (Kullback-Leibler Divergence) < 0.05 cho cả 3 distributions
+    \item Huấn luyện: 500 epochs, 5 rounds với initialization khác nhau
+    \item Critic:Generator ratio = 3:1
+    \item Learning rates: $\eta_G = 0.08$, $\eta_C = 0.1$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Ưu điểm:}
+\begin{itemize}
+    \item WGAN-GP khắc phục mode collapse và vanishing gradients
+    \item Quantum circuit depth thấp (chỉ 3 tham số)
+    \item Data encoding vào basis state probabilities: $\vec{p} = [p_0, p_1, p_2, p_3]^T$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Thí nghiệm 3: Tạo ảnh MNIST nén}
+\textbf{Hybrid Generator mới:}
+\begin{itemize}
+    \item Classical NN ($2 \times 2$ với Leaky ReLU) + Quantum PQC
+    \item Mục đích: Đưa nonlinearity vào quantum GANs
+    \item Input: Noise vector $z \sim U[0,1]$
+    \item Output: MNIST digits $2 \times 2$ sau PCA
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Preprocessing:}
+\begin{itemize}
+    \item MNIST $28 \times 28$ $\rightarrow$ PCA $\rightarrow$ 3 dimensions
+    \item Augment: $\vec{x}' = [\vec{x}^T, 0.5]$
+    \item Map: $p_i = x'_i / \sum_{j=0}^{3} x'_j$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Gradient computation:}
+\[
+\frac{\partial \theta_g}{\partial t} = \frac{L(\theta_g + \epsilon) - L(\theta_g - \epsilon)}{2\epsilon}
+\]
+(Finite difference method với $\epsilon = 0.02$)
+\end{frame}
+
+\begin{frame}{Kết quả MNIST Generation}
+\textbf{Thành công:}
+\begin{itemize}
+    \item Tạo được hình ảnh cho tất cả 10 digits (0-9)
+    \item KLD và critic loss hội tụ về 0
+    \item Batch size: 5, 200 epochs
+    \item Learning rates: $\eta_{NN} = 0.02$, $\eta_{PQC} = 0.08$, $\eta_C = 0.02$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Đổi mới:}
+\begin{itemize}
+    \item \textbf{Lần đầu tiên} quantum photonic chip học mixed states
+    \item \textbf{Lần đầu tiên} tạo compressed images với silicon photonic
+    \item Hybrid generator khác với cách tiếp cận hiện có: giữ info trong quantum state thay vì classical post-processing
+    \item Có thể tích hợp vào quantum circuits phức tạp hơn
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Paper 1: Đóng góp và Hạn chế}
+\textbf{Đóng góp chính:}
+\begin{enumerate}
+    \item Chip silicon photonic có maximum expressibility (tạo mọi trạng thái 2-qubit)
+    \item 3 ứng dụng quantum GANs thành công trên phần cứng thực
+    \item Hybrid generator với classical NN để thêm nonlinearity
+    \item Kết quả SOTA cho quantum photonic GANs
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Hạn chế:}
+\begin{itemize}
+    \item Chỉ 4 dimensions (2 qubits) - giới hạn ứng dụng
+    \item Success rate bị ảnh hưởng bởi post-selection
+    \item Requires cryogenic cooling cho SNSPDs
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Triển vọng:}
+\begin{itemize}
+    \item Mở rộng lên high-dimensional encoding
+    \item Kết hợp với patched GAN cho large-scale data
+    \item Ứng dụng trong quantum state distribution loading
+\end{itemize}
+\end{frame}
+
+% ============================================================================
+% PAPER 2: Protein Folding with Trapped-Ion QC
+% ============================================================================
+\section{Paper 2: Protein Folding với Trapped-Ion Quantum Computer}
+
+\begin{frame}{Paper 2: Tổng quan}
+\textbf{Tiêu đề:} Protein folding with an all-to-all trapped-ion quantum computer
+
+\vspace{0.3cm}
+\textbf{Tác giả:} Sebastián V. Romero, et al. (Kipu Quantum \& IonQ Inc.)
+
+\vspace{0.3cm}
+\textbf{Nguồn:} arXiv:2506.07866v2
+
+\vspace{0.3cm}
+\textbf{Lĩnh vực:} Quantum Optimization, Protein Folding, Trapped-Ion Computing
+\end{frame}
+
+\begin{frame}{Bài toán Protein Folding}
+\textbf{Tầm quan trọng:}
+\begin{itemize}
+    \item Cấu trúc 3D protein quyết định chức năng sinh học
+    \item Hiểu folding $\rightarrow$ drug design, disease treatment
+    \item Thuật toán cổ điển: AlphaFold2 (AI-based) rất thành công
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Tiếp cận lượng tử:}
+\begin{itemize}
+    \item Map protein folding $\rightarrow$ ground-state search
+    \item Higher-Order Unconstrained Binary Optimization (HUBO)
+    \item Lattice model: Tetrahedral lattice (4 directions/residue)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Challenges:}
+\begin{itemize}
+    \item Exponential growth của search space
+    \item Dense coupling giữa các amino acids
+    \item Hardware noise và limited connectivity
+\end{itemize}
+\end{frame}
+
+\begin{frame}{BF-DCQO Algorithm}
+\textbf{Bias-Field Digitized Counterdiabatic Quantum Optimization:}
+
+\vspace{0.2cm}
+\textbf{Ưu điểm:}
+\begin{itemize}
+    \item Non-variational $\rightarrow$ tránh barren plateaus
+    \item Phù hợp với dense HUBO problems
+    \item Tận dụng all-to-all connectivity của trapped-ion
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Hamiltonian:}
+\[
+H_{total} = \lambda_c H_c + \lambda_g H_g + \lambda_d H_d + \lambda_i H_i
+\]
+
+\begin{itemize}
+    \item $H_c$: Chirality constraints
+    \item $H_g$: Geometric constraints
+    \item $H_d$: Steric/distance constraints
+    \item $H_i$: Miyazawa-Jernigan interactions
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Two-Stage Architecture}
+\textbf{Tại sao cần 2 stages?}
+\begin{itemize}
+    \item Hardware noise ảnh hưởng đến measurement accuracy
+    \item Tách energy estimation và structural decoding
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Stage 1: Energy Estimation}
+\begin{itemize}
+    \item Chạy BF-DCQO để tìm ground state
+    \item Đo năng lượng quantum system
+    \item Output: Optimal parameters
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Stage 2: Structural Decoding}
+\begin{itemize}
+    \item Fix parameters từ Stage 1
+    \item Chạy với shots cao hơn để decode cấu trúc
+    \item Map bitstring $\rightarrow$ 3D coordinates
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Hardware: IonQ Trapped-Ion}
+\textbf{Đặc điểm:}
+\begin{itemize}
+    \item All-to-all connectivity (fully connected graph)
+    \item 36 qubits available
+    \item High fidelity 2-qubit gates
+    \item Longer coherence times so với superconducting
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Circuit Pruning Strategies:}
+
+\textbf{1. Soft Pruning:}
+\begin{itemize}
+    \item Chọn 1000 DCQO solutions ngẫu nhiên
+    \item Đánh giá bằng local search
+    \item Giữ top-5 solutions
+\end{itemize}
+
+\textbf{2. Hard Pruning (better):}
+\begin{itemize}
+    \item Giới hạn entangling gates ở hàng trăm
+    \item Giảm circuit depth và noise
+    \item Consistently outperforms soft pruning
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kết quả: Protein Sequences}
+\textbf{Tested proteins:}
+\begin{enumerate}
+    \item \texttt{GYDPETGTWG} (10 amino acids)
+    \item \texttt{QPPGGSKVILF} (11 amino acids)
+    \item \texttt{WTFGQGTKVEIK} (12 amino acids - \textbf{33 qubits})
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Achievements:}
+\begin{itemize}
+    \item \textbf{Optimal solutions} cho cả 3 sequences
+    \item \textbf{Largest quantum protein folding} implementation to date
+    \item Energy correlation với conformational energy rất tốt
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Energy scaling:}
+\begin{itemize}
+    \item 5 residues $\rightarrow$ 14 residues: Minimum energy tăng \textbf{230,000\%}
+    \item Thể hiện exponential growth của energy landscape
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kết quả: MAX 4-SAT}
+\textbf{Testing robustness với combinatorial optimization:}
+
+\vspace{0.3cm}
+\textbf{Setup:}
+\begin{itemize}
+    \item MAX 4-SAT instances at computational phase transition
+    \item Clause-to-variable ratio $\sim 9.7$
+    \item Kích thước: 24-36 qubits
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Results:}
+\begin{itemize}
+    \item \textbf{Optimal solutions achieved} cho tất cả instances
+    \item Consistent performance across different problem sizes
+    \item Validates algorithm effectiveness beyond protein folding
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kết quả: Spin-Glass Problems}
+\textbf{Fully connected spin-glass (36 qubits):}
+
+\vspace{0.3cm}
+\textbf{Test cases:}
+\begin{itemize}
+    \item 3 random instances với all-to-all coupling
+    \item Dense interaction graph
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Performance:}
+\begin{itemize}
+    \item \textbf{2 out of 3} instances: Exact ground state found
+    \item 1 instance: Near-optimal solution
+    \item Demonstrates synergy between:
+    \begin{itemize}
+        \item Non-variational optimization
+        \item All-to-all connectivity hardware
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Paper 2: So sánh và Triển vọng}
+\textbf{So với Classical/AI approaches:}
+\begin{itemize}
+    \item AlphaFold2: Data-driven, cần large training set
+    \item Quantum: Physics-based energy minimization
+    \item Quantum có thể complement AI methods
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Pathway to Quantum Advantage:}
+\begin{enumerate}
+    \item Trapped-ion scalability đang được cải thiện
+    \item BF-DCQO tránh được barren plateau problem
+    \item Dense HUBO problems với industrial relevance
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Future directions:}
+\begin{itemize}
+    \item Longer protein sequences (>15 residues)
+    \item Improved lattice models (off-lattice)
+    \item Integration với experimental validation
+    \item Drug discovery applications
+\end{itemize}
+\end{frame}
+
+% ============================================================================
+% PAPER 3: Protein Structure Prediction Framework
+% ============================================================================
+\section{Paper 3: Framework Dự đoán Cấu trúc Protein}
+
+\begin{frame}{Paper 3: Tổng quan}
+\textbf{Tiêu đề:} Prediction of Protein Three-dimensional Structures via a Hardware-Executable Quantum Computing Framework
+
+\vspace{0.3cm}
+\textbf{Tác giả:} Yuqi Zhang, et al. (Kent State, Cleveland Clinic, Harvard)
+
+\vspace{0.3cm}
+\textbf{Nguồn:} arXiv:2506.22677
+
+\vspace{0.3cm}
+\textbf{Lĩnh vực:} Quantum Computing, Structural Biology, Drug Discovery
+\end{frame}
+
+\begin{frame}{Động lực: Beyond AlphaFold}
+\textbf{AlphaFold3 limitations:}
+\begin{itemize}
+    \item Data-driven approach
+    \item "Information trap" cho short peptides
+    \item Limited capacity với fragments < 10 residues
+    \item Không trực tiếp optimize physical energy
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Quantum advantage hypothesis:}
+\begin{itemize}
+    \item Physics-based: Trực tiếp minimize Hamiltonian
+    \item Higher theoretical reliability cho peptide fragments
+    \item Better cho active site prediction (drug binding)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Goal:}
+\begin{itemize}
+    \item End-to-end executable pipeline trên utility-level quantum hardware
+    \item Validation với therapeutic proteins
+    \item Benchmarking vs AlphaFold3
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Framework Architecture}
+\textbf{Complete Pipeline:}
+
+\begin{enumerate}
+    \item \textbf{Problem Formulation}
+    \begin{itemize}
+        \item Tetrahedral lattice encoding
+        \item Hamiltonian construction: $H_t = \lambda_c H_c + \lambda_g H_g + \lambda_d H_d + \lambda_i H_i$
+    \end{itemize}
+
+    \item \textbf{VQE Optimization}
+    \begin{itemize}
+        \item EfficientSU2 ansatz
+        \item COBYLA optimizer
+        \item 2,000 shots, $\geq 200$ iterations
+    \end{itemize}
+
+    \item \textbf{Two-Stage Execution}
+    \begin{itemize}
+        \item Stage 1: Energy estimation
+        \item Stage 2: Fixed-parameter measurement (20,000 shots)
+    \end{itemize}
+
+    \item \textbf{Post-processing}
+    \begin{itemize}
+        \item Atom completion
+        \item Charge neutralization
+        \item PDB file generation
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Hardware: IBM Quantum}
+\textbf{Platform:}
+\begin{itemize}
+    \item IBM-Cleveland Clinic 127-qubit processor
+    \item Eagle r3 architecture
+    \item Heavy-hex topology (limited connectivity)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Encoding scheme:}
+\begin{itemize}
+    \item Sparse Pauli operators
+    \item Amino acid connectivity trong tetrahedral lattice
+    \item Constraints: Chirality, geometry, distance, interactions
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Computational efficiency:}
+\begin{itemize}
+    \item Average: $\sim 10$ seconds/iteration
+    \item 73.53\% time trên quantum end
+    \item Rest: Classical optimization overhead
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Evaluation: Metrics}
+\textbf{Geometric accuracy:}
+\[
+\text{RMSD} = \sqrt{\frac{1}{N}\sum_{i=1}^{N} ||r_i^{pred} - r_i^{ref}||^2}
+\]
+
+\vspace{0.3cm}
+\textbf{Functional consistency:}
+\begin{itemize}
+    \item Molecular docking với AutoDock Vina
+    \item Binding affinity (kcal/mol)
+    \item Lower is better (stronger binding)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Test set:}
+\begin{itemize}
+    \item 23 protein fragments từ PDB
+    \item Lengths: 5-10 residues
+    \item 7 với therapeutic potential
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kết quả: vs AlphaFold3}
+\textbf{Overall performance (23 fragments):}
+
+\vspace{0.3cm}
+\begin{table}
+\centering
+\begin{tabular}{lcc}
+\hline
+\textbf{Metric} & \textbf{Quantum Method} & \textbf{AlphaFold3} \\
+\hline
+Average RMSD (Å) & \textbf{3.33} & 3.87 \\
+Average Binding Affinity (kcal/mol) & \textbf{-4.38} & -4.00 \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+\textbf{Superiority rates:}
+\begin{itemize}
+    \item RMSD: \textbf{18 out of 23} cases lower
+    \item Binding affinity: \textbf{21 out of 23} cases better
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Statistical significance:}
+\begin{itemize}
+    \item Clear advantage cho short peptides
+    \item Especially good for active site regions
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kết quả: Therapeutic Proteins}
+\textbf{Validation với 7 therapeutic targets:}
+
+\vspace{0.2cm}
+\begin{enumerate}
+    \item \textbf{6mu3} - Anti-HIV-1 Fab 2G12
+    \item \textbf{3ans} - Human soluble epoxide hydrolase
+    \item \textbf{1a9m} - HIV-1 protease G48H
+    \item \textbf{1qin} - Lactoylglutathione lyase
+    \item \textbf{3b26} - HSP 90-alpha
+    \item \textbf{1fkn} - Beta-Secretase BACE1 (Alzheimer's)
+    \item \textbf{2xxx} - Glutamate receptor GluK2
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Success:}
+\begin{itemize}
+    \item All structures predicted successfully
+    \item Suitable for molecular docking
+    \item Demonstrates feasibility cho drug discovery
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Energy-Structure Correlation}
+\textbf{Key finding:}
+\begin{itemize}
+    \item Positive correlation giữa quantum system energy và docking affinity
+    \item Lower quantum energy $\rightarrow$ Better binding affinity
+    \item Validates physics-based approach
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Implications:}
+\begin{itemize}
+    \item Quantum method captures relevant molecular interactions
+    \item Energy minimization meaningful cho structural biology
+    \item Not just mathematical optimization - physically grounded
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Advantage over AI:}
+\begin{itemize}
+    \item AI learns patterns, quantum solves physics
+    \item More reliable cho novel sequences
+    \item Less dependent on training data distribution
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Scalability: Sliding Window}
+\textbf{Challenge:}
+\begin{itemize}
+    \item Long proteins > 10 residues
+    \item Exponential qubit requirements
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Solution - Sliding Window approach:}
+\begin{itemize}
+    \item Window size: 7 residues
+    \item Stride: 1 residue
+    \item Overlap và merge fragments
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Demonstration:}
+\begin{itemize}
+    \item Full-length A$\beta$42 (Alzheimer's peptide)
+    \item Successfully predicted từ overlapping windows
+    \item Enables handling arbitrary length sequences
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Future improvement:}
+\begin{itemize}
+    \item Better merging algorithms
+    \item Adaptive window sizes
+    \item Multi-scale optimization
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Paper 3: Đóng góp chính}
+\textbf{Scientific contributions:}
+\begin{enumerate}
+    \item \textbf{First} complete hardware-executable pipeline cho protein structure
+    \item \textbf{First} validation trên utility-level quantum processors
+    \item \textbf{Outperforms} AlphaFold3 cho short peptides
+    \item Direct application to drug discovery
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Technical innovations:}
+\begin{itemize}
+    \item Two-stage architecture for noise mitigation
+    \item Sliding-window scalability
+    \item Post-processing for docking compatibility
+    \item Comprehensive benchmarking methodology
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Practical impact:}
+\begin{itemize}
+    \item Blueprint cho domain-specific quantum applications
+    \item Demonstrates utility-level quantum computing feasibility
+    \item Real-world therapeutic protein validation
+\end{itemize}
+\end{frame}
+
+% ============================================================================
+% COMPARISON & CONCLUSION
+% ============================================================================
+\section{So sánh và Kết luận}
+
+\begin{frame}{So sánh 3 Papers}
+\begin{table}
+\scriptsize
+\centering
+\begin{tabular}{|p{2.5cm}|p{3.5cm}|p{3.5cm}|p{3.5cm}|}
+\hline
+\textbf{Aspect} & \textbf{Paper 1} & \textbf{Paper 2} & \textbf{Paper 3} \\
+\hline
+Hardware & Silicon Photonic & Trapped-Ion (IonQ) & Superconducting (IBM) \\
+\hline
+Qubits & 2 qubits & Up to 36 qubits & Up to 127 qubits \\
+\hline
+Algorithm & Quantum GANs & BF-DCQO & VQE \\
+\hline
+Application & Machine Learning & Protein Folding & Structure Prediction \\
+\hline
+Key Strength & Max expressibility & All-to-all connectivity & End-to-end pipeline \\
+\hline
+Main Result & 99.41\% fidelity & 12 AA folded & Beats AlphaFold3 \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+\textbf{Common themes:}
+\begin{itemize}
+    \item Demonstrating quantum utility on real hardware
+    \item Addressing NISQ-era challenges (noise, limited qubits)
+    \item Application-driven research
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Hardware Platforms Comparison}
+\textbf{Silicon Photonic (Paper 1):}
+\begin{itemize}
+    \item[+] Room temperature operation
+    \item[+] Low noise, high precision
+    \item[+] Naturally suited for quantum communication
+    \item[-] Limited scalability (currently 2 qubits)
+    \item[-] Post-selection reduces success rate
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Trapped-Ion (Paper 2):}
+\begin{itemize}
+    \item[+] All-to-all connectivity
+    \item[+] High gate fidelities
+    \item[+] Long coherence times
+    \item[-] Slower gates
+    \item[-] Moderate scalability challenges
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Superconducting (Paper 3):}
+\begin{itemize}
+    \item[+] Most scalable (100+ qubits)
+    \item[+] Fast gates
+    \item[-] Limited connectivity (heavy-hex)
+    \item[-] Higher noise, shorter coherence
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Quantum GANs vs Protein Folding}
+\textbf{Different approaches to quantum advantage:}
+
+\vspace{0.3cm}
+\textbf{Quantum GANs (Paper 1):}
+\begin{itemize}
+    \item Exploit quantum superposition và expressibility
+    \item Generator tạo quantum states
+    \item Hybrid quantum-classical learning
+    \item Focus: Machine learning applications
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Protein Folding (Papers 2 \& 3):}
+\begin{itemize}
+    \item Ground-state energy minimization
+    \item Map biological problem $\rightarrow$ Hamiltonian
+    \item Physics-based approach
+    \item Focus: Scientific computing applications
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Complementary directions:}
+\begin{itemize}
+    \item GANs: Generative models, creative tasks
+    \item Folding: Optimization, structure discovery
+    \item Both demonstrate NISQ-era quantum utility
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Challenges và Limitations}
+\textbf{Common challenges across all papers:}
+
+\vspace{0.3cm}
+\begin{enumerate}
+    \item \textbf{Hardware noise}
+    \begin{itemize}
+        \item Mitigation: Two-stage architectures, error mitigation
+        \item Still limits problem sizes
+    \end{itemize}
+
+    \item \textbf{Limited qubit counts}
+    \begin{itemize}
+        \item Workarounds: Circuit pruning, sliding windows
+        \item Fundamental scaling needed
+    \end{itemize}
+
+    \item \textbf{Classical-Quantum interface}
+    \begin{itemize}
+        \item Measurement overhead
+        \item Parameter optimization loops
+        \item Data encoding/decoding
+    \end{itemize}
+
+    \item \textbf{Validation}
+    \begin{itemize}
+        \item How to verify quantum advantage?
+        \item Need better benchmarks
+        \item Classical baselines improving rapidly
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Future Directions}
+\textbf{Near-term (1-3 years):}
+\begin{itemize}
+    \item Scale to 50-100 logical qubits với error correction
+    \item Better hybrid classical-quantum algorithms
+    \item Application-specific quantum processors
+    \item Improved noise mitigation techniques
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Medium-term (3-7 years):}
+\begin{itemize}
+    \item Fault-tolerant quantum computing
+    \item Quantum advantage cho practical problems
+    \item Integration với AI/ML pipelines
+    \item Commercial quantum applications
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Long-term (7+ years):}
+\begin{itemize}
+    \item Universal quantum computers
+    \item Drug discovery revolution
+    \item Materials design
+    \item Cryptography và security
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ý nghĩa thực tiễn}
+\textbf{Drug Discovery (Papers 2 \& 3):}
+\begin{itemize}
+    \item Faster protein structure prediction
+    \item Better binding affinity predictions
+    \item Novel therapeutic target discovery
+    \item Personalized medicine
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Machine Learning (Paper 1):}
+\begin{itemize}
+    \item Quantum-enhanced generative models
+    \item Distribution learning cho finance, physics
+    \item Quantum data encoding
+    \item Hybrid classical-quantum AI
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Scientific Computing:}
+\begin{itemize}
+    \item Materials science simulations
+    \item Chemical reaction modeling
+    \item Optimization problems
+    \item Fundamental physics research
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kết luận chung}
+\textbf{Key takeaways:}
+
+\vspace{0.3cm}
+\begin{enumerate}
+    \item \textbf{Quantum utility is emerging}
+    \begin{itemize}
+        \item Real hardware demonstrations
+        \item Competitive with/surpassing classical methods
+        \item Application-specific advantages
+    \end{itemize}
+
+    \item \textbf{Multiple hardware platforms viable}
+    \begin{itemize}
+        \item Photonic: Precision, low noise
+        \item Trapped-ion: Connectivity, fidelity
+        \item Superconducting: Scale, speed
+    \end{itemize}
+
+    \item \textbf{Hybrid approaches essential}
+    \begin{itemize}
+        \item Classical-quantum co-design
+        \item Noise mitigation strategies
+        \item Domain-specific optimizations
+    \end{itemize}
+
+    \item \textbf{Path to quantum advantage}
+    \begin{itemize}
+        \item Focus on specific applications
+        \item Leverage quantum strengths
+        \item Continuous hardware improvement
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Tài liệu tham khảo}
+\textbf{Papers discussed:}
+
+\vspace{0.3cm}
+\begin{enumerate}
+    \item Haoran Ma, et al. "Quantum Generative Adversarial Networks in a Silicon Photonic Chip with Maximum Expressibility." arXiv:2404.05921v1, 2024.
+
+    \vspace{0.2cm}
+    \item Sebastián V. Romero, et al. "Protein folding with an all-to-all trapped-ion quantum computer." arXiv:2506.07866v2, 2025.
+
+    \vspace{0.2cm}
+    \item Yuqi Zhang, et al. "Prediction of Protein Three-dimensional Structures via a Hardware-Executable Quantum Computing Framework." arXiv:2506.22677, 2025.
+\end{enumerate}
+
+\vspace{0.5cm}
+\textbf{Additional resources:}
+\begin{itemize}
+    \item IBM Quantum: \url{https://quantum-computing.ibm.com}
+    \item IonQ Platform: \url{https://ionq.com}
+    \item Xanadu Photonics: \url{https://xanadu.ai}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[c]
+\centering
+\Huge{Cảm ơn!}
+
+\vspace{1cm}
+\Large{Questions?}
+\end{frame}
+
+\end{document}
